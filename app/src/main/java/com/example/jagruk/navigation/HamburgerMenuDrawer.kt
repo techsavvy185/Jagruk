@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.jagruk.data.HardcodedData
 
@@ -25,7 +26,7 @@ data class DrawerMenuItem(
 
 @Composable
 fun HamburgerMenuDrawer(
-    navController: NavHostController,
+    navController: NavController,
     onCloseDrawer: () -> Unit
 ) {
     val drawerMenuItems = getDrawerMenuItems(navController, onCloseDrawer)
@@ -79,7 +80,7 @@ private fun DrawerHeader() {
             color = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -146,7 +147,7 @@ private fun DrawerMenuItem(
 
 @Composable
 private fun getDrawerMenuItems(
-    navController: NavHostController,
+    navController: NavController,
     onCloseDrawer: () -> Unit
 ): List<DrawerMenuItem> {
     return listOf(

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jagruk.data.HardcodedData
 import com.example.jagruk.data.models.LearningModule
+import com.example.jagruk.data.models.ModuleStatus
 import com.example.jagruk.data.models.PageType
 import com.example.jagruk.data.models.Quiz
 import com.example.jagruk.data.models.QuizResult
@@ -34,6 +35,16 @@ class ModuleViewModel @Inject constructor() : ViewModel() {
                     error = if (module == null) "Module not found" else null
                 )
             }
+        }
+    }
+
+    fun updateModuleStatus(status: ModuleStatus) {
+        _moduleUiState.update { currentState ->
+            currentState.module?.let { module ->
+                currentState.copy(
+                    module = module.copy(status = status)
+                )
+            } ?: currentState
         }
     }
 

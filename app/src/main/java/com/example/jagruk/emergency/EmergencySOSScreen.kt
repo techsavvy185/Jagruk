@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,7 +28,6 @@ fun EmergencySOSScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Show snackbar for messages
     uiState.message?.let { message ->
         LaunchedEffect(message) {
             kotlinx.coroutines.delay(3000)
@@ -87,10 +87,9 @@ private fun EmergencySOSContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Warning Card
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFFFEBEE)
+                containerColor = MaterialTheme.colorScheme.errorContainer
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -99,10 +98,10 @@ private fun EmergencySOSContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = Icons.Default.Warning,
+                    imageVector = Icons.Rounded.Warning,
                     contentDescription = null,
                     modifier = Modifier.size(48.dp),
-                    tint = Color(0xFFE53E3E)
+                    tint = Color.Red
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -111,7 +110,7 @@ private fun EmergencySOSContent(
                     text = "Emergency Alert Testing",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFE53E3E),
+                    color = Color.Red,
                     textAlign = TextAlign.Center
                 )
 
@@ -119,9 +118,10 @@ private fun EmergencySOSContent(
 
                 Text(
                     text = "This feature simulates server-side emergency alerts. In a real deployment, alerts would be triggered by government agencies and disaster monitoring systems.",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    color = Color.Black.copy(alpha = 0.8f)
                 )
             }
         }
@@ -209,7 +209,9 @@ private fun EmergencySOSContent(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
@@ -251,7 +253,7 @@ private fun EmergencySOSContent(
             ) {
                 Text(
                     text = "📱 What to expect:",
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Medium
                 )
 
@@ -259,7 +261,7 @@ private fun EmergencySOSContent(
 
                 Text(
                     text = "• Critical notification with sound & vibration\n• Red flashing LED (if available)\n• Persistent notification that won't auto-dismiss\n• Action button to view alert details\n• Automatic navigation to alerts screen",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

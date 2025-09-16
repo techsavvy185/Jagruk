@@ -1,6 +1,7 @@
 package com.example.jagruk.ui.screens.alerts
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,28 +14,39 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.jagruk.data.models.Alert
 import com.example.jagruk.data.models.AlertSeverity
 import com.example.jagruk.data.models.AlertType
+import com.example.jagruk.ui.components.BottomNavigationBar
+import com.example.jagruk.ui.screens.screenClass.BottomNavScreen
 import com.example.jagruk.ui.theme.JagrukTheme
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
 fun AlertsScreen(
-    viewModel: AlertsViewModel = hiltViewModel()
+    viewModel: AlertsViewModel = hiltViewModel(),
+    navController: NavController,
+    openDrawer: () -> Unit
 ) {
     val uiState by viewModel.alertsUiState.collectAsState()
 
     AlertsScreenLayout(
         uiState = uiState,
         onRefresh = viewModel::refreshAlerts,
-        onAlertClick = viewModel::markAlertAsRead
+        onAlertClick = viewModel::markAlertAsRead,
+        openDrawer = openDrawer,
+        navController = navController
     )
 }
 
@@ -43,48 +55,61 @@ fun AlertsScreen(
 private fun AlertsScreenLayout(
     uiState: AlertsUiState,
     onRefresh: () -> Unit,
-    onAlertClick: (String) -> Unit
+    onAlertClick: (String) -> Unit,
+    openDrawer: () -> Unit,
+    navController: NavController
 ) {
-    Column(
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        // Header with refresh
-        Surface(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
+            .background(MaterialTheme.colorScheme.background),
+        topBar = {
+            TopAppBar(
+                title = {
                     Text(
                         text = "Emergency Alerts",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                    Text(
-                        text = "Stay informed about local hazards",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                    )
-                }
-
-                IconButton(onClick = onRefresh) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refresh alerts",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            openDrawer()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = null,
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onRefresh) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh alerts",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                items = listOf(
+                    BottomNavScreen.Learn,
+                    BottomNavScreen.Alerts,
+                    BottomNavScreen.MyPlan
+                )
+            )
         }
+    ) {
 
         if (uiState.isLoading) {
             Box(
@@ -96,9 +121,9 @@ private fun AlertsScreenLayout(
         } else {
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(it)
             ) {
-                // Active Alerts Section
                 val activeAlerts = uiState.alerts.filter { it.isActive }
 
                 if (activeAlerts.isNotEmpty()) {
@@ -162,7 +187,7 @@ private fun AlertCard(
         colors = CardDefaults.cardColors(
             containerColor = getAlertCardColor(alert.severity, alert.isActive)
         ),
-        border = if (alert.isActive) CardDefaults.outlinedCardBorder() else null
+        border = if (alert.isActive) CardDefaults.outlinedCardBorder() else null,
     ) {
         Column(
             modifier = Modifier
@@ -190,14 +215,15 @@ private fun AlertCard(
                     Column {
                         Text(
                             text = alert.title,
-                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.Black,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
 
                         Text(
                             text = alert.location,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Black,
                         )
                     }
                 }
@@ -211,45 +237,64 @@ private fun AlertCard(
 
                     Text(
                         text = formatTimestamp(alert.timestamp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.Black,
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = alert.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp)
+            ) {
+                Text(
+                    text = alert.description,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = Color.Black,
+                )
+            }
 
             if (alert.actionItems.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = "Recommended Actions:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 3.dp)
+                ) {
+                    Text(
+                        text = "Recommended Actions:",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Red,
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 alert.actionItems.forEach { actionItem ->
                     Row(
                         verticalAlignment = Alignment.Top,
-                        modifier = Modifier.padding(bottom = 4.dp)
+                        modifier = Modifier.padding(bottom = 4.dp, start = 5.dp)
                     ) {
                         Text(
                             text = "• ",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color.Black,
                         )
                         Text(
                             text = actionItem,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color.Black,
                         )
                     }
                 }
@@ -264,13 +309,13 @@ private fun AlertCard(
                     Icon(
                         imageVector = Icons.Default.Circle,
                         contentDescription = null,
-                        modifier = Modifier.size(8.dp),
+                        modifier = Modifier.size(10.dp),
                         tint = Color.Red
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Active Alert",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelMedium,
                         color = Color.Red,
                         fontWeight = FontWeight.Medium
                     )
@@ -290,16 +335,19 @@ private fun SeverityChip(
             Color.White,
             "LOW"
         )
+
         AlertSeverity.MODERATE -> Triple(
             Color(0xFFFF9800),
             Color.White,
             "MODERATE"
         )
+
         AlertSeverity.HIGH -> Triple(
             Color(0xFFFF5722),
             Color.White,
             "HIGH"
         )
+
         AlertSeverity.CRITICAL -> Triple(
             Color(0xFFD32F2F),
             Color.White,
@@ -314,7 +362,7 @@ private fun SeverityChip(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelLarge,
             color = textColor,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

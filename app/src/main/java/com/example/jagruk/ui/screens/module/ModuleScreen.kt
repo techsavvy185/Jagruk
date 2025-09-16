@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,10 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jagruk.data.models.LearningModule
 import com.example.jagruk.data.models.ModulePage
+import com.example.jagruk.data.models.ModuleStatus
 import com.example.jagruk.data.models.PageType
 import com.example.jagruk.data.models.Quiz
 import com.example.jagruk.data.models.QuizResult
 import com.example.jagruk.ui.theme.JagrukTheme
+import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -53,21 +56,23 @@ fun ModuleScreen(
         }
     } else {
         uiState.module?.let { module ->
-            Column(
+            Scaffold(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
+                    .background(MaterialTheme.colorScheme.background),
+                topBar = {
+                    ModuleHeader(
+                        module = module,
+                        currentPage = pagerState.currentPage,
+                        totalPages = module.pages.size,
+                        onNavigateBack = onNavigateBack
+                    )
+                }
             ) {
-                ModuleHeader(
-                    module = module,
-                    currentPage = pagerState.currentPage,
-                    totalPages = module.pages.size,
-                    onNavigateBack = onNavigateBack
-                )
-
                 HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .padding(it)
                 ) { pageIndex ->
                     val page = module.pages[pageIndex]
 
@@ -90,9 +95,14 @@ fun ModuleScreen(
                                     }
                                 },
                                 isFirstPage = pageIndex == 0,
-                                isLastPage = pageIndex == module.pages.size - 1
+                                isLastPage = pageIndex == module.pages.size - 1,
+                                onModuleCompleted = {
+                                    viewModel.updateModuleStatus(ModuleStatus.COMPLETED)
+                                    onNavigateBack()
+                                }
                             )
                         }
+
                         PageType.QUIZ -> {
                             page.quiz?.let { quiz ->
                                 QuizPage(
@@ -134,6 +144,7 @@ private fun ModuleHeader(
     Surface(
         color = MaterialTheme.colorScheme.primaryContainer,
         modifier = Modifier.fillMaxWidth()
+            .statusBarsPadding()
     ) {
         Column(
             modifier = Modifier
@@ -200,6 +211,7 @@ private fun ContentPage(
     page: ModulePage,
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
+    onModuleCompleted:()->Unit,
     isFirstPage: Boolean,
     isLastPage: Boolean
 ) {
@@ -235,12 +247,7 @@ private fun ContentPage(
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Text(
-                        text = page.content,
-                        style = MaterialTheme.typography.bodyLarge,
-                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.3,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    MarkdownText(markdown = page.content)
                 }
             }
         }
@@ -286,7 +293,9 @@ private fun ContentPage(
                 }
             } else {
                 Button(
-                    onClick = { /* Module completed */ },
+                    onClick = {
+                        onModuleCompleted()
+                    },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
@@ -494,7 +503,7 @@ private fun QuizOptionCard(
         ),
         border = if (isSelected) {
             CardDefaults.outlinedCardBorder().copy(
-                brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+                brush = SolidColor(MaterialTheme.colorScheme.primary),
                 width = 2.dp
             )
         } else null
@@ -622,6 +631,24 @@ private fun QuizResultsView(
 @Composable
 fun ModuleScreenPreview() {
     JagrukTheme {
-        // Preview implementation would go here
+        ContentPage(
+            page = ModulePage(
+                id = "",
+                title = "",
+                content = "",
+                type = PageType.CONTENT,
+                quiz = Quiz(
+                    id = "",
+                    title = "",
+                    questions = emptyList(),
+                    passingScore = 100.0,
+                ),
+            ),
+            onNextPage = { },
+            onPreviousPage = {},
+            isFirstPage = true,
+            isLastPage = false,
+            onModuleCompleted = {}
+        )
     }
 }

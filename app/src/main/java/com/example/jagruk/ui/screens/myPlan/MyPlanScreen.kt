@@ -14,13 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.jagruk.data.models.EmergencyContact
 import com.example.jagruk.data.models.EmergencyKit
 import com.example.jagruk.data.models.EmergencyKitItem
 import com.example.jagruk.data.models.FamilyPlan
+import com.example.jagruk.ui.components.BottomNavigationBar
+import com.example.jagruk.ui.screens.screenClass.BottomNavScreen
 import com.example.jagruk.ui.theme.JagrukTheme
 
 @Composable
@@ -28,7 +32,9 @@ fun MyPlanScreen(
     viewModel: MyPlanViewModel = hiltViewModel(),
     onNavigateToEmergencyKit: () -> Unit = {},
     onNavigateToContacts: () -> Unit = {},
-    onNavigateToShelters: () -> Unit = {}
+    onNavigateToShelters: () -> Unit = {},
+    openDrawer: () -> Unit,
+    navController: NavController
 ) {
     val uiState by viewModel.myPlanUiState.collectAsState()
 
@@ -39,10 +45,13 @@ fun MyPlanScreen(
         onNavigateToContacts = onNavigateToContacts,
         onNavigateToShelters = onNavigateToShelters,
         onAddContact = viewModel::addEmergencyContact,
-        onUpdatePlan = viewModel::updateFamilyPlan
+        onUpdatePlan = viewModel::updateFamilyPlan,
+        openDrawer = openDrawer,
+        navController = navController
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MyPlanScreenLayout(
     uiState: MyPlanUiState,
@@ -51,46 +60,92 @@ private fun MyPlanScreenLayout(
     onNavigateToContacts: () -> Unit,
     onNavigateToShelters: () -> Unit,
     onAddContact: (EmergencyContact) -> Unit,
-    onUpdatePlan: (FamilyPlan) -> Unit
+    onUpdatePlan: (FamilyPlan) -> Unit,
+    openDrawer: () -> Unit,
+    navController: NavController
 ) {
-    LazyColumn(
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "My Plan",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            openDrawer()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = null,
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                items = listOf(
+                    BottomNavScreen.Learn,
+                    BottomNavScreen.Alerts,
+                    BottomNavScreen.MyPlan
+                )
+            )
+        }
     ) {
-        item {
-            PlanOverviewCard(
-                completedItems = uiState.completedPreparednessItems,
-                totalItems = uiState.totalPreparednessItems
-            )
-        }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(it),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                PlanOverviewCard(
+                    completedItems = uiState.completedPreparednessItems,
+                    totalItems = uiState.totalPreparednessItems
+                )
+            }
 
-        item {
-            EmergencyKitCard(
-                emergencyKit = uiState.emergencyKit,
-                onKitItemToggle = onKitItemToggle,
-                onNavigateToFullKit = onNavigateToEmergencyKit
-            )
-        }
+            item {
+                EmergencyKitCard(
+                    emergencyKit = uiState.emergencyKit,
+                    onKitItemToggle = onKitItemToggle,
+                    onNavigateToFullKit = onNavigateToEmergencyKit
+                )
+            }
 
-        item {
-            FamilyPlanCard(
-                familyPlan = uiState.familyPlan,
-                onNavigateToContacts = onNavigateToContacts,
-                onNavigateToShelters = onNavigateToShelters
-            )
-        }
+            item {
+                FamilyPlanCard(
+                    familyPlan = uiState.familyPlan,
+                    onNavigateToContacts = onNavigateToContacts,
+                    onNavigateToShelters = onNavigateToShelters
+                )
+            }
 
-        item {
-            ImportantDocumentsCard()
-        }
+            item {
+                ImportantDocumentsCard()
+            }
 
-        item {
-            CommunicationPlanCard(
-                emergencyContacts = uiState.emergencyContacts.take(3)
-            )
+            item {
+                CommunicationPlanCard(
+                    emergencyContacts = uiState.emergencyContacts.take(3)
+                )
+            }
         }
     }
 }
@@ -132,7 +187,8 @@ private fun PlanOverviewCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val progress = if (totalItems > 0) completedItems.toFloat() / totalItems.toFloat() else 0f
+            val progress =
+                if (totalItems > 0) completedItems.toFloat() / totalItems.toFloat() else 0f
 
             LinearProgressIndicator(
                 progress = progress,
@@ -332,7 +388,7 @@ private fun FamilyPlanCard(
             familyPlan?.let { plan ->
                 Text(
                     text = "Plan Summary:",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
 
@@ -340,19 +396,21 @@ private fun FamilyPlanCard(
 
                 Text(
                     text = "• ${plan.emergencyContacts.size} emergency contacts saved",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
 
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "• ${plan.meetingPoints.size} meeting points identified",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
                     text = "• ${plan.importantDocuments.size} important documents listed",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
@@ -391,7 +449,8 @@ private fun PlanActionButton(
 
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -432,8 +491,8 @@ private fun ImportantDocumentsCard() {
 
             Text(
                 text = "Keep copies of these documents in a waterproof container:",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -453,13 +512,15 @@ private fun ImportantDocumentsCard() {
                 ) {
                     Text(
                         text = "• ",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     Text(
                         text = document,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
@@ -503,7 +564,7 @@ private fun CommunicationPlanCard(
 
             Text(
                 text = "Key Emergency Contacts:",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onTertiaryContainer
             )
@@ -520,21 +581,24 @@ private fun CommunicationPlanCard(
                     ) {
                         Text(
                             text = contact.name,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                         Text(
                             text = contact.phoneNumber,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
                 }
             } else {
                 Text(
                     text = "No emergency contacts added yet.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }
