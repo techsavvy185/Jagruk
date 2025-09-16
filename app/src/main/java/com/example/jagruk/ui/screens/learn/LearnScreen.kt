@@ -19,11 +19,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.jagruk.data.models.Badge
 import com.example.jagruk.data.models.LearningModule
 import com.example.jagruk.data.models.ModuleStatus
 import com.example.jagruk.data.models.UserProgress
+import com.example.jagruk.navigation.HamburgerMenuDrawer
+import com.example.jagruk.ui.components.BottomNavigationBar
+import com.example.jagruk.ui.screens.screenClass.BottomNavScreen
 import com.example.jagruk.ui.theme.JagrukTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun LearnScreen(
@@ -32,9 +37,11 @@ fun LearnScreen(
     onNavigateToEmergencyKit: () -> Unit = {},
     onNavigateToContacts: () -> Unit = {},
     onNavigateToShelters: () -> Unit = {},
-    navigateToSOS: () -> Unit
+    navigateToSOS: () -> Unit,
+    openDrawer: () -> Unit,
+    navController: NavController
 ) {
-    val uiState by viewModel.learnUiState.collectAsState()
+    val uiState by viewModel.learnUiState.collectAsState(initial = LearnUiState())
 
     LearnScreenLayout(
         uiState = uiState,
@@ -45,10 +52,13 @@ fun LearnScreen(
         onBuildKitClick = onNavigateToEmergencyKit,
         onEmergencyContactsClick = onNavigateToContacts,
         onFindSheltersClick = onNavigateToShelters,
-        navigateToSOS = navigateToSOS
+        navigateToSOS = navigateToSOS,
+        openDrawer = openDrawer,
+        navController = navController
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LearnScreenLayout(
     uiState: LearnUiState,
@@ -57,83 +67,127 @@ private fun LearnScreenLayout(
     onBuildKitClick: () -> Unit,
     onEmergencyContactsClick: () -> Unit,
     onFindSheltersClick: () -> Unit,
-    navigateToSOS: () ->Unit
+    navigateToSOS: () -> Unit,
+    openDrawer: () -> Unit,
+    navController: NavController
 ) {
-    LazyColumn(
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            WelcomeContinueCard(
-                userName = uiState.userProfile?.name ?: "Student",
-                currentModule = uiState.currentModule,
-                onContinueLearning = onContinueLearning
-            )
-        }
-
-        item {
-            ProgressCard(
-                progress = uiState.userProfile?.progress
-            )
-        }
-
-        item {
-            HazardModulesCard(
-                modules = uiState.learningModules,
-                onModuleClick = onModuleClick
-            )
-        }
-
-        item {
-            LocalHazardProfileCard(
-                userLocation = uiState.userProfile?.location ?: "Your area"
-            )
-        }
-
-        item {
-            QuickActionsCard(
-                onBuildKitClick = onBuildKitClick,
-                onEmergencyContactsClick = onEmergencyContactsClick,
-                onFindSheltersClick = onFindSheltersClick
-            )
-        }
-        item {
-            // Temporary Emergency SOS Test Button
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFFFEBEE)
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+        topBar = {
+            TopAppBar(
+                title = {
                     Text(
-                        text = "🚨 Emergency SOS Test",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = "Home",
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFE53E3E)
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Button(
+                },
+                navigationIcon = {
+                    IconButton(
                         onClick = {
-                            navigateToSOS()
-                            // Navigate to Emergency SOS screen
-                            // You'll need to pass this navigation function from MainActivity
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE53E3E)
-                        )
+                            openDrawer()
+                        }
                     ) {
-                        Text("Test Emergency Alert", color = Color.White)
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = null,
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                items = listOf(
+                    BottomNavScreen.Learn,
+                    BottomNavScreen.Alerts,
+                    BottomNavScreen.MyPlan
+                )
+            )
+        }
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                WelcomeContinueCard(
+                    userName = uiState.userProfile?.name ?: "Student",
+                    currentModule = uiState.currentModule,
+                    onContinueLearning = onContinueLearning
+                )
+            }
+
+            item {
+                ProgressCard(
+                    progress = uiState.userProfile?.progress
+                )
+            }
+
+            item {
+                HazardModulesCard(
+                    modules = uiState.learningModules,
+                    onModuleClick = onModuleClick
+                )
+            }
+
+            item {
+                LocalHazardProfileCard(
+                    userLocation = uiState.userProfile?.location ?: "Your area"
+                )
+            }
+
+            item {
+                QuickActionsCard(
+                    onBuildKitClick = onBuildKitClick,
+                    onEmergencyContactsClick = onEmergencyContactsClick,
+                    onFindSheltersClick = onFindSheltersClick
+                )
+            }
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFFFEBEE)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "🚨 Emergency SOS Test",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFE53E3E)
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = {
+                                navigateToSOS()
+                                // Navigate to Emergency SOS screen
+                                // You'll need to pass this navigation function from MainActivity
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFE53E3E)
+                            )
+                        ) {
+                            Text("Test Emergency Alert", color = Color.White)
+                        }
                     }
                 }
             }
@@ -429,6 +483,7 @@ private fun ModuleCard(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
+
                     ModuleStatus.IN_PROGRESS -> {
                         Icon(
                             imageVector = Icons.Default.PlayCircleOutline,
@@ -443,6 +498,7 @@ private fun ModuleCard(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
+
                     ModuleStatus.NOT_STARTED -> {
                         Icon(
                             imageVector = Icons.Default.RadioButtonUnchecked,

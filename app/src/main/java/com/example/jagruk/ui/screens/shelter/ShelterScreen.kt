@@ -3,6 +3,7 @@ package com.example.jagruk.ui.screens.shelter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -217,13 +218,13 @@ private fun ShelterCard(
                             Icon(
                                 imageVector = Icons.Default.Verified,
                                 contentDescription = null,
-                                modifier = Modifier.size(14.dp),
+                                modifier = Modifier.size(18.dp),
                                 tint = Color.White
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Approved",
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.labelLarge,
                                 color = Color.White
                             )
                         }
@@ -235,13 +236,12 @@ private fun ShelterCard(
 
             Text(
                 text = shelter.address,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Shelter Details
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -249,12 +249,13 @@ private fun ShelterCard(
                 Column {
                     Text(
                         text = "Capacity",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = "${shelter.capacity} people",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -262,12 +263,12 @@ private fun ShelterCard(
                 Column {
                     Text(
                         text = "Facilities",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                     Text(
                         text = "${shelter.facilities.size} amenities",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -275,7 +276,6 @@ private fun ShelterCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Facilities
             FacilitiesRow(facilities = shelter.facilities.take(4))
 
             if (shelter.facilities.size > 4) {
@@ -326,11 +326,11 @@ private fun ShelterCard(
 
 @Composable
 private fun FacilitiesRow(facilities: List<String>) {
-    Row(
+    LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        facilities.forEach { facility ->
+        items(facilities) { facility ->
             Surface(
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
@@ -342,13 +342,13 @@ private fun FacilitiesRow(facilities: List<String>) {
                     Icon(
                         imageVector = getFacilityIcon(facility),
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(20.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = facility,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -356,6 +356,7 @@ private fun FacilitiesRow(facilities: List<String>) {
         }
     }
 }
+
 
 @Composable
 private fun EmptySheltersView() {

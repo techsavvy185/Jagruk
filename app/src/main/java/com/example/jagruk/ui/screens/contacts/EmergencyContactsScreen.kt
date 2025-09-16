@@ -87,7 +87,6 @@ private fun EmergencyContactsLayout(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Emergency Services Section
         item {
             SectionHeader(title = "Emergency Services")
         }
@@ -149,7 +148,7 @@ private fun EmergencyServiceCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFEBEE)
+            containerColor = MaterialTheme.colorScheme.errorContainer
         )
     ) {
         Row(
@@ -188,15 +187,15 @@ private fun EmergencyServiceCard(
                 Text(
                     text = contact.phoneNumber,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                    color = Color.Black.copy(alpha = 0.8f),
                     fontWeight = FontWeight.Medium
                 )
 
                 Text(
                     text = contact.relationship,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
+                    color = Color.Black.copy(alpha = 0.6f),
+                    )
             }
 
             Button(
