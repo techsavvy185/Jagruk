@@ -211,6 +211,12 @@ private fun getDrawerMenuItems(
             }
         ),
         DrawerMenuItem(
+            id = "emergency_sos",
+            title = "Emergency SOS Test",
+            icon = Icons.Default.EmergencyShare,
+            route = "emergency_sos"
+        ),
+        DrawerMenuItem(
             id = "settings",
             title = "Settings",
             icon = Icons.Default.Settings,

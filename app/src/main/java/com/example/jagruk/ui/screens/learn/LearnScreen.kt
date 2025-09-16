@@ -31,7 +31,8 @@ fun LearnScreen(
     onNavigateToModule: (String) -> Unit = {},
     onNavigateToEmergencyKit: () -> Unit = {},
     onNavigateToContacts: () -> Unit = {},
-    onNavigateToShelters: () -> Unit = {}
+    onNavigateToShelters: () -> Unit = {},
+    navigateToSOS: () -> Unit
 ) {
     val uiState by viewModel.learnUiState.collectAsState()
 
@@ -43,7 +44,8 @@ fun LearnScreen(
         onModuleClick = onNavigateToModule,
         onBuildKitClick = onNavigateToEmergencyKit,
         onEmergencyContactsClick = onNavigateToContacts,
-        onFindSheltersClick = onNavigateToShelters
+        onFindSheltersClick = onNavigateToShelters,
+        navigateToSOS = navigateToSOS
     )
 }
 
@@ -54,7 +56,8 @@ private fun LearnScreenLayout(
     onModuleClick: (String) -> Unit,
     onBuildKitClick: () -> Unit,
     onEmergencyContactsClick: () -> Unit,
-    onFindSheltersClick: () -> Unit
+    onFindSheltersClick: () -> Unit,
+    navigateToSOS: () ->Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -96,6 +99,44 @@ private fun LearnScreenLayout(
                 onEmergencyContactsClick = onEmergencyContactsClick,
                 onFindSheltersClick = onFindSheltersClick
             )
+        }
+        item {
+            // Temporary Emergency SOS Test Button
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFFFEBEE)
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "🚨 Emergency SOS Test",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFE53E3E)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = {
+                            navigateToSOS()
+                            // Navigate to Emergency SOS screen
+                            // You'll need to pass this navigation function from MainActivity
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE53E3E)
+                        )
+                    ) {
+                        Text("Test Emergency Alert", color = Color.White)
+                    }
+                }
+            }
         }
     }
 }

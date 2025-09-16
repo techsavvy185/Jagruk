@@ -1,5 +1,9 @@
 package com.example.jagruk.data.models
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Alert(
     val id: String,
     val title: String,
@@ -10,9 +14,10 @@ data class Alert(
     val timestamp: Long,
     val isActive: Boolean,
     val actionItems: List<String>
-)
+) : Parcelable
 
-enum class AlertType {
+@Parcelize
+enum class AlertType : Parcelable {
     EARTHQUAKE,
     LANDSLIDE,
     FLOOD,
@@ -21,7 +26,8 @@ enum class AlertType {
     GENERAL
 }
 
-enum class AlertSeverity {
+@Parcelize
+enum class AlertSeverity : Parcelable {
     LOW,
     MODERATE,
     HIGH,
