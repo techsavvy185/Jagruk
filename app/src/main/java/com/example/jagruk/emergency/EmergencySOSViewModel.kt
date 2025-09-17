@@ -42,12 +42,12 @@ class EmergencySOSViewModel @Inject constructor(
                 )
             )
 
-            alarmManager.scheduleEmergencyAlert(30, testAlert)
+            alarmManager.scheduleEmergencyAlert(10, testAlert)
 
             _uiState.value = _uiState.value.copy(
                 isScheduling = false,
                 lastScheduledTime = System.currentTimeMillis(),
-                message = "Emergency alert scheduled for 30 seconds from now!"
+                message = "Emergency alert scheduled for 10 seconds from now!"
             )
         }
     }

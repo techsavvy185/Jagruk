@@ -143,7 +143,7 @@ private fun EmergencySOSContent(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "This will schedule a critical earthquake alert to appear in 30 seconds with full notification, sound, and vibration.",
+                    text = "This will schedule a critical earthquake alert to appear in 10 seconds with full notification, sound, and vibration.",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -176,7 +176,7 @@ private fun EmergencySOSContent(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Schedule Test Alert (30s)",
+                            "Schedule Test Alert (10s)",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium
                         )

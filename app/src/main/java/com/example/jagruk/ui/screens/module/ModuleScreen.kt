@@ -367,119 +367,125 @@ private fun QuizQuestionView(
     val currentQuestion = quiz.questions[currentQuestionIndex]
     val selectedAnswer = selectedAnswers[currentQuestion.id]
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Column(
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
+                .fillMaxWidth()
+                .weight(1f)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
             ) {
-                Text(
-                    text = quiz.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(16.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "${currentQuestionIndex + 1}/${quiz.questions.size}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        text = quiz.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text(
+                            text = "${currentQuestionIndex + 1}/${quiz.questions.size}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(
+                    text = currentQuestion.question,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = MaterialTheme.typography.titleMedium.lineHeight * 1.3
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                currentQuestion.options.forEachIndexed { index, option ->
+                    QuizOptionCard(
+                        option = option,
+                        isSelected = selectedAnswer == index,
+                        onOptionSelected = { onAnswerSelected(currentQuestion.id, index) }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Quiz navigation buttons
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            if (currentQuestionIndex > 0) {
+                OutlinedButton(
+                    onClick = onPreviousQuestion,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Previous")
+                }
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            if (currentQuestionIndex < quiz.questions.size - 1) {
+                Button(
+                    onClick = onNextQuestion,
+                    enabled = selectedAnswer != null,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Next")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = currentQuestion.question,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
-                lineHeight = MaterialTheme.typography.titleMedium.lineHeight * 1.3
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            currentQuestion.options.forEachIndexed { index, option ->
-                QuizOptionCard(
-                    option = option,
-                    isSelected = selectedAnswer == index,
-                    onOptionSelected = { onAnswerSelected(currentQuestion.id, index) }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-        }
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Quiz navigation buttons
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        if (currentQuestionIndex > 0) {
-            OutlinedButton(
-                onClick = onPreviousQuestion,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Previous")
-            }
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        if (currentQuestionIndex < quiz.questions.size - 1) {
-            Button(
-                onClick = onNextQuestion,
-                enabled = selectedAnswer != null,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("Next")
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        } else {
-            Button(
-                onClick = onSubmitQuiz,
-                enabled = selectedAnswers.size == quiz.questions.size,
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Submit Quiz")
+            } else {
+                Button(
+                    onClick = onSubmitQuiz,
+                    enabled = selectedAnswers.size == quiz.questions.size,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Send,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Submit Quiz")
+                }
             }
         }
     }
@@ -631,24 +637,6 @@ private fun QuizResultsView(
 @Composable
 fun ModuleScreenPreview() {
     JagrukTheme {
-        ContentPage(
-            page = ModulePage(
-                id = "",
-                title = "",
-                content = "",
-                type = PageType.CONTENT,
-                quiz = Quiz(
-                    id = "",
-                    title = "",
-                    questions = emptyList(),
-                    passingScore = 100.0,
-                ),
-            ),
-            onNextPage = { },
-            onPreviousPage = {},
-            isFirstPage = true,
-            isLastPage = false,
-            onModuleCompleted = {}
-        )
+
     }
 }

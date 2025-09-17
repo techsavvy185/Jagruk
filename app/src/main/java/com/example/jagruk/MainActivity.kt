@@ -1,6 +1,11 @@
 package com.example.jagruk
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -27,14 +32,37 @@ import com.example.jagruk.ui.theme.JagrukTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+private val REQUEST_OVERLAY_PERMISSION = 1234
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!Settings.canDrawOverlays(this)) {
+            requestOverlayPermission()
+        }
         enableEdgeToEdge()
         setContent {
             JagrukTheme {
                 JagrukApp()
+            }
+        }
+    }
+    private fun requestOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(
+                    this,
+                    "Unable to request overlay permission",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
